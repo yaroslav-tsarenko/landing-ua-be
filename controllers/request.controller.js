@@ -17,6 +17,7 @@ const sendMessageToKommo = async (req, res) => {
         await axios.post('https://tresortech.kommo.com/api/v4/leads', [
             {
                 name: "Лід із форми LandingUA",
+                pipeline_id: 10647283,
                 custom_fields_values: [
                     { field_id: 1051004, values: [{ value: username }] },
                     { field_id: 1051006, values: [{ value: phone }] },
@@ -25,20 +26,9 @@ const sendMessageToKommo = async (req, res) => {
                     { field_id: 1051014, values: [{ value: utm_source }] },
                     { field_id: 1051016, values: [{ value: utm_medium }] },
                     { field_id: 1051018, values: [{ value: utm_campaign }] },
-                    { field_id: 1051022, values: [{ value: device }] },
-                    { field_id: 1051020, values: [{ value: userAgent }] }
-                ],
-                _embedded: {
-                    contacts: [
-                        {
-                            first_name: username,
-                            custom_fields_values: [
-                                { field_id: 1051006, values: [{ value: phone }] },
-                                { field_id: 1051008, values: [{ value: email }] }
-                            ]
-                        }
-                    ]
-                }
+                    { field_id: 1051020, values: [{ value: userAgent }] },
+                    { field_id: 1051022, values: [{ value: device }] }
+                ]
             }
         ], {
             headers: {
@@ -47,10 +37,10 @@ const sendMessageToKommo = async (req, res) => {
             }
         });
 
-        res.status(200).send('Message sent successfully');
+        res.status(200).send('✅ Лід успішно створено');
     } catch (error) {
-        console.error("❌ Помилка при відправці в Kommo:", error?.response?.data || error.message);
-        res.status(500).send('Error sending message');
+        console.error("❌ Помилка при відправці в Kommo:", JSON.stringify(error?.response?.data, null, 2));
+        res.status(500).send('❌ Помилка створення ліда');
     }
 };
 
