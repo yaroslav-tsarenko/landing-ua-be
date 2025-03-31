@@ -1,31 +1,5 @@
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
-
-const counterFilePath = path.join(__dirname, 'leadCounter.json');
-
-function getNextLeadNumber() {
-    let current = 0;
-
-    try {
-        if (fs.existsSync(counterFilePath)) {
-            const data = fs.readFileSync(counterFilePath, 'utf8');
-            current = JSON.parse(data).last || 0;
-        }
-    } catch (err) {
-        console.error("Помилка читання лічильника:", err);
-    }
-
-    const next = current + 1;
-
-    try {
-        fs.writeFileSync(counterFilePath, JSON.stringify({ last: next }), 'utf8');
-    } catch (err) {
-        console.error("Помилка запису лічильника:", err);
-    }
-
-    return `#${String(next).padStart(4, '0')}`;
-}
+const Lead = require('../models/lead.model');
 
 const sendMessageToKommo = async (req, res) => {
     const {
@@ -40,10 +14,11 @@ const sendMessageToKommo = async (req, res) => {
         device
     } = req.body;
 
-    const leadNumber = getNextLeadNumber();
-    const leadName = `${leadNumber} | Лід із форми LandingUA`;
-
     try {
+        const totalLeads = await Lead.countDocuments();
+        const leadNumber = `#${String(totalLeads + 1).padStart(4, '0')}`;
+        const leadName = `Лід із форми LandingUA | ${leadNumber}`;
+
         await axios.post('https://tresortech.kommo.com/api/v4/leads', [
             {
                 name: leadName,
@@ -67,9 +42,24 @@ const sendMessageToKommo = async (req, res) => {
             }
         });
 
-        res.status(200).send('✅ Лід успішно створено');
+        const newLead = new Lead({
+            username,
+            phone,
+            email,
+            ip,
+            utm_source,
+            utm_medium,
+            utm_campaign,
+            userAgent,
+            device,
+            leadNumber
+        });
+
+        await newLead.save();
+
+        res.status(200).send('✅ Лід успішно створено та збережено');
     } catch (error) {
-        console.error("❌ Помилка при відправці в Kommo:", JSON.stringify(error?.response?.data, null, 2));
+        console.error("❌ Помилка при відправці в Kommo або збереженні:", JSON.stringify(error?.response?.data || error.message, null, 2));
         res.status(500).send('❌ Помилка створення ліда');
     }
 };
