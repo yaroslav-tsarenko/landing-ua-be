@@ -1,4 +1,31 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
+
+const counterFilePath = path.join(__dirname, 'leadCounter.json');
+
+function getNextLeadNumber() {
+    let current = 0;
+
+    try {
+        if (fs.existsSync(counterFilePath)) {
+            const data = fs.readFileSync(counterFilePath, 'utf8');
+            current = JSON.parse(data).last || 0;
+        }
+    } catch (err) {
+        console.error("Помилка читання лічильника:", err);
+    }
+
+    const next = current + 1;
+
+    try {
+        fs.writeFileSync(counterFilePath, JSON.stringify({ last: next }), 'utf8');
+    } catch (err) {
+        console.error("Помилка запису лічильника:", err);
+    }
+
+    return `#${String(next).padStart(4, '0')}`;
+}
 
 const sendMessageToKommo = async (req, res) => {
     const {
@@ -13,10 +40,13 @@ const sendMessageToKommo = async (req, res) => {
         device
     } = req.body;
 
+    const leadNumber = getNextLeadNumber();
+    const leadName = `${leadNumber} | Лід із форми LandingUA`;
+
     try {
         await axios.post('https://tresortech.kommo.com/api/v4/leads', [
             {
-                name: "Лід із форми LandingUA",
+                name: leadName,
                 pipeline_id: 10647283,
                 custom_fields_values: [
                     { field_id: 1051004, values: [{ value: username }] },
