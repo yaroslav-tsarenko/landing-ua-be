@@ -1,12 +1,13 @@
 const axios = require('axios');
 
 const sendMessageToKommo = async (req, res) => {
+
     const { username, text, phone, nickname } = req.body;
 
     try {
         await axios.post(`https://tresortech.kommo.com/api/v4/leads`, [
             {
-                name: `${text} ${username} (${nickname}) з телефоном ${phone}, ID в Telegram: ${userId}`,
+                name: `${text} ${username} (${nickname}) з телефоном ${phone}`,
                 contacts: [
                     {
                         first_name: username,
