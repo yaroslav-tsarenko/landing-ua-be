@@ -7,6 +7,13 @@ const requestRouter = require('./routes/request.route');
 
 const app = express();
 const port = process.env.PORT || 3000;
+const cors = require('cors');
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
+
 
 connectDB();
 
